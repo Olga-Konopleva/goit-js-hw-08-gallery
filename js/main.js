@@ -14,10 +14,11 @@ const items = galleryItems.map(item => {
     const li = document.createElement('li');
     li.classList.add('gallery__item');
     const a = document.createElement('a');
+    a.classList.add('gallery__link');
     a.setAttribute('href', item.original);
     li.append(a);
     const img = document.createElement('img');
-    img.classList.add('gallery__link');
+    img.classList.add('gallery__image');
     img.setAttribute('src', item.preview);
     img.setAttribute('data-source', item.original);
     img.setAttribute('data-index', galleryItems.indexOf(item));
@@ -31,18 +32,10 @@ gallery.append(...items);
 let activeIndex;
 // Реализация делегирования на галерее ul.js-gallery и получение url большого изображения.
 
-gallery.addEventListener('click', event => {
- event.preventDefault();
- activeIndex = Number(event.target.dataset.index);
-
- const srcOriginal = event.target.dataset.source; 
- const altImg = event.target.alt;
- changeAttributes(srcOriginal, altImg);
- openModal(event);
-})
+gallery.addEventListener('click', onClickGallery)
 
 // Закрытие модального окна по клику на div.lightbox__overlay.
-overlayRef.addEventListener('click', onOverlayClick);
+overlayRef.addEventListener('click', closeModal);
 
 // Закрытие модального окна по клику на кнопку button[data-action="close-lightbox"].Очистка значения атрибута src элемента img.lightbox__image.
 btnCloseRef.addEventListener('click', closeModal);
@@ -51,10 +44,18 @@ btnCloseRef.addEventListener('click', closeModal);
 btnLeftRef.addEventListener('click', onClickLeft);
 btnRightRef.addEventListener('click', onClickRight);
 
-function onOverlayClick (event) {
-  if(event.target.className === "lightbox__overlay") {
-    closeModal();
-  };
+function onClickGallery (event) {
+  event.preventDefault();
+  activeIndex = Number(event.target.dataset.index);
+  const srcOriginal = event.target.dataset.source; 
+  const altImg = event.target.alt;
+  changeAttributes(srcOriginal, altImg);
+  // Открытие модального окна по клику на элементе галереи.
+  if(event.target.tagName === 'IMG') {
+     modalRef.classList.add('is-open');
+     window.addEventListener('keydown', onEsc);
+     window.addEventListener('keydown', flipArrows);
+   };
 }
 
 function closeModal (event) {
@@ -70,14 +71,6 @@ function changeAttributes (src, alt) {
  imageModalRef.alt = alt;
 }
 
-// Открытие модального окна по клику на элементе галереи.
-function openModal () {
-  if(event.target.tagName === 'IMG') {
-    modalRef.classList.add('is-open');
-    window.addEventListener('keydown', onEsc);
-    window.addEventListener('keydown', flipArrows);
- };
-}
 
 function onEsc (event) {
   if(event.code === 'Escape') {
@@ -106,4 +99,3 @@ function onClickRight () {
     imageModalRef.src = galleryItems[activeIndex+=1].original;
     }
 }
-
